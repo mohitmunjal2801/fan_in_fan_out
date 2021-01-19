@@ -11,15 +11,12 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         raise Exception("A directory path is required as input")
 
     #files = yield context.call_activity("E2_GetFileList", root_directory)
-    files = root_directory.split(',')
-    upload_tasks = []
+    
+    
     getfile_tasks = []
-    input_files = []
     output_files = []
-    for file in files:
-        upload_tasks.append(context.call_activity("E2_CopyFileToBlob", file))
-    input_files = yield context.task_all(upload_tasks)
-    #input_files.append(input_file)
+    input_files = yield context.call_sub_orchestrator("DurableFunctionsSubOrchestrator",root_directory)
+    
     for fileItem in input_files:
       fname = pathlib.Path(fileItem).parts[-1:]
       getfile_tasks.append(context.call_activity("E2_GetFileList", fname[0]))
